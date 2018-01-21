@@ -1,5 +1,6 @@
 package document_analyzer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -65,7 +66,7 @@ public class LuceneClass {
 						++numTerms;
 					}
 					documentVectors.add(vector);
-					System.out.println("Document Vector "+(i+1)+" :  " +vector.toString()+"\n");
+					System.out.println("Document Vector " + (i + 1) + " :  " + vector.toString() + "\n");
 				} else {
 					System.err.println("Document " + i + " had a null terms vector for body");
 				}
@@ -85,7 +86,7 @@ public class LuceneClass {
 
 		for (File file : new File(directory).listFiles()) {
 
-			//System.out.println("Indexing " + file.getCanonicalPath());
+			// System.out.println("Indexing " + file.getCanonicalPath());
 			Document document = getDocument(file);
 			indexWriter.addDocument(document);
 		}
@@ -148,6 +149,27 @@ public class LuceneClass {
 			}
 		}
 		return similarDocuments;
+
+	}
+
+	public ArrayList<ResultClass> getSimilarDocuments(ArrayList<ArrayList<Double>> similarityMatrix, double minValue,
+			double maxValue) {
+
+		ArrayList<ResultClass> similarDocuments = new ArrayList<ResultClass>();
+
+		for (ArrayList<Double> row : similarityMatrix) {
+			for (int column = 0; column < similarityMatrix.indexOf(row); column++) {
+
+				if (row.get(column) >= Double.valueOf(minValue) && row.get(column) < Double.valueOf(maxValue)) {
+					ResultClass result = new ResultClass();
+					result.setDocument1(similarityMatrix.indexOf(row) + 1);
+					result.setDocument2(column + 1);
+					similarDocuments.add(result);
+				}
+			}
+		}
+
+		return similarDocuments;
 	}
 
 	public ArrayList<String> getCopyDocuments(ArrayList<ArrayList<Double>> similarityMatrix) {
@@ -166,8 +188,28 @@ public class LuceneClass {
 		return copyDocuments;
 	}
 
-	
-	
+	public ArrayList<ResultClass> getOutlierDocuments(ArrayList<ArrayList<Double>> similarityMatrix, double minValue,
+			double maxValue) {
+		ArrayList<ResultClass> similarDocuments = this.getSimilarDocuments(similarityMatrix, minValue, maxValue);
+		ArrayList<ResultClass> outliers = new ArrayList<ResultClass>();
+		boolean isOutlier;
+		for (int i = 1; i <= similarityMatrix.size(); i++) {
+			isOutlier = true;
+			for (ResultClass result : similarDocuments) {
+				if (i == result.getDocument1() || i == result.getDocument2()) {
+					isOutlier = false;
+					break;
+				}
+			}
+			if (isOutlier) {
+				ResultClass result = new ResultClass();
+				result.setDocument1(i);
+				outliers.add(result);
+			}
+		}
+		return outliers;
+	}
+
 	public ArrayList<String> getOutlierDocuments(ArrayList<ArrayList<Double>> similarityMatrix) {
 
 		ArrayList<String> outlierDocuments = new ArrayList<String>();
@@ -194,8 +236,6 @@ public class LuceneClass {
 		return outlierDocuments;
 	}
 
-	
-	
 	public ArrayList<String> getDocumentClusters(ArrayList<ArrayList<Double>> similarityMatrix) {
 
 		ArrayList<String> documentsCluster = new ArrayList<String>();
@@ -203,7 +243,7 @@ public class LuceneClass {
 		boolean subString;
 
 		for (ArrayList<Double> row : similarityMatrix) {
-			
+
 			subString = false;
 			String cluster;
 			cluster = String.valueOf(similarityMatrix.indexOf(row) + 1);
@@ -220,15 +260,26 @@ public class LuceneClass {
 					break;
 				}
 			}
-			
+
 			if (!subString) {
 				documentsCluster.add(cluster);
 				subString = false;
 			}
 
 		}
-		
+
 		return documentsCluster;
+	}
+
+	private Double getMax(ArrayList<ArrayList<Double>> matrix) {
+		Double maxValue = 0.0;
+		for (ArrayList<Double> row : matrix) {
+			for (Double value : row) {
+				if (value >= maxValue && (row.indexOf(value) != matrix.indexOf(row)))
+					maxValue = value;
+			}
+		}
+		return maxValue;
 	}
 
 }

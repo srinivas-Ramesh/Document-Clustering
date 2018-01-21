@@ -6,8 +6,8 @@ import java.util.Map;
 
 public class TestClass {
 
-	private static String indexDirectoryPath = "C:\\Users\\i322373\\Desktop";
-	private static String dataDirectoryPath = "C:\\Users\\i322373\\Desktop\\textFiles1";
+	private static String indexDirectoryPath = "C:\\Users\\Srinivas Rao\\Desktop";
+	private static String dataDirectoryPath = "C:\\Users\\Srinivas Rao\\Desktop\\documents";
 
 	public static void main(String args[]) {
 
@@ -64,6 +64,15 @@ public class TestClass {
 				System.out.println(string+"\n");
 			}
 			System.out.println("\n");
+			
+			System.out.println("--------------------OUTLIER DOCUMENTS1--------------------\n");
+			ArrayList<ResultClass> outliers;
+			outliers = luceneClass.getOutlierDocuments(similarityMatrix,0.2,0.8);
+			for (ResultClass result : outliers) {
+				System.out.println("Document : "+ result.getDocument1()+" is an Outlier\n");
+			}
+			System.out.println("\n");
+		
 			
 			System.out.println("--------------------DOCUMENTS CLUSTER--------------------\n");
 			documentsClusters = luceneClass.getDocumentClusters(similarityMatrix);
